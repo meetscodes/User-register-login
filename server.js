@@ -1,19 +1,25 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
+const bodyParser = require('body-parser');
 
 const secretkey = "niwhefhwefhwoeoqdjoqj";
-
 const app = express();
+app.use(bodyParser.json());
 
 app.post("/login", (req, res) => {
-  const userdata = req.body;
+  const { username, password } = req.body; 
 
-  jwt.sign({ userdata }, secretkey, { expiresIn: "7d" }, (err, token) => {
-    res.json({
-      token,
-    });
+  jwt.sign({ username, password }, secretkey, { expiresIn: "7d" }, (err, token) => {
+    if (err) {
+      res.status(500).json({ error: 'Failed to generate token' });
+    } else {
+      res.json({
+        token,
+      });
+    }
   });
 });
+
 
 const verifyToken = (req, res, next) => {
   const bearerHeader = req.headers["authentication"];
@@ -44,8 +50,6 @@ app.post("/profile", verifyToken, (req, res) => {
     }
   });
 });
-
-
 
 
 app.listen(3000, () => {
