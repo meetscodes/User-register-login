@@ -22,35 +22,39 @@ app.post("/login", (req, res) => {
 
 
 const verifyToken = (req, res, next) => {
-  const bearerHeader = req.headers["authentication"];
+  const bearerHeader = req.headers["authorization"]
 
   if (typeof bearerHeader !== "undefined") {
     const bearer = bearerHeader.split(" ");
     const token = bearer[1];
     req.token = token;
 
-    next();
+    jwt.verify(token, secretkey, (err, data) =>{
+      if(err){
+        res.status(401).send({
+          result: "token is not valid",
+        });
+      }else{
+        req.user = data;
+        // chack in
+        next()
+      }
+    })
   } else {
-    res.send({
-      result: "token is not valid",
+    res.status(400).send({
+      result: "token is not found",
     });
   }
 };
 
 app.post("/profile", verifyToken, (req, res) => {
-  jwt.verify(req.token, secretkey, (err, authData) => {
-    if (err) {
-      res.send({
-        result: "token is not valid",
-      });
-    } else {
-      res.json({
-        authData,
-      });
-    }
-  });
+ res.json(req.user)
 });
 
+app.get("/post", verifyToken, (req, res)=>{
+  //req.user.username
+  res.send(new Array(50))
+})
 
 app.listen(3000, () => {
   console.log("server running on port 3000");
