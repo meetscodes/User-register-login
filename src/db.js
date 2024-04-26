@@ -9,11 +9,13 @@ const connect = async () => {
       mongoose.connection.on("error", () => {
           console.log("error while connection..");
         });
-  
+        
       const connect = await mongoose.connect("mongodb+srv://italiyaravi704:S1roMzo21k5lC8Fu@user-data.uegxxdl.mongodb.net/?retryWrites=true&w=majority&appName=user-data");
     } catch (error) {
       console.error("database connection error...", error);
     }
   };
+
+  
 
 export default connect;
