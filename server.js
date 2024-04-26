@@ -1,10 +1,13 @@
-const express = require("express");
-const jwt = require("jsonwebtoken");
-const bodyParser = require('body-parser');
-
+import express from "express";
+import jwt from "jsonwebtoken";
+import bodyParser from "body-parser";
+import connect from "./src/db.js";
 const secretkey = "niwhefhwefhwoeoqdjoqj";
+
 const app = express();
 app.use(bodyParser.json());
+
+connect();
 
 app.post("/login", (req, res) => {
   const { username, password } = req.body; 

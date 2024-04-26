@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const connect = async () => {
     try {
@@ -10,10 +10,10 @@ const connect = async () => {
           console.log("error while connection..");
         });
   
-      const connect = await mongoose.connect('mongodb+srv://italiyaravi704:<password>@user.tvxbzs0.mongodb.net/?retryWrites=true&w=majority&appName=user');
+      const connect = await mongoose.connect("mongodb+srv://italiyaravi704:S1roMzo21k5lC8Fu@user-data.uegxxdl.mongodb.net/?retryWrites=true&w=majority&appName=user-data");
     } catch (error) {
       console.error("database connection error...", error);
     }
   };
 
-  export default connect;
+export default connect;
