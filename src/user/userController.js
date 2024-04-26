@@ -1,42 +1,73 @@
 const secretkey = "niwhefhwefhwoeoqdjoqj";
-import userModel from "./userModel";
+import userModel from "./userModel.js";
 import jwt from "jsonwebtoken";
 
 const register = async (req, res) => {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+  
+    try {
+      const isUserExist = await userModel.findOne({ username });
+      if (isUserExist) {
+        return res.status(400).json({ error: "User already exists" });
+      }
+    } catch (error) {
+      return res.status(500).json({ error: "Error checking user existence" });
+    }
+  
+    try {
+      const newUser = await userModel.create({
+        username,
+        password,
+      });
+  
+      return res.status(201).json({ message: "User created successfully" });
+    } catch (error) {
+      return res.status(500).json({ error: "Error while user creation" });
+    }
+  };
+
+
+
+
+const login = async (req, res) => {
+
   const { username, password } = req.body;
 
   if (!username || !password) {
-    res.status(401).json({ error: "all filds are require" });
+    return res.status(400).json({ error: "Username and password are required" });
   }
 
   try {
-    const isUserExist = await userModel.findOne({ username });
+    const user = await userModel.findOne({ username });
 
-    if (isUserExist) {
-      res.status(401).json({ error: "user is allredy exist" });
+    if (!user || user.password !== password) {
+      return res.status(401).json({ error: "Invalid username or password" });
     }
+
+    jwt.sign(
+        { username, password },
+        secretkey,
+        { expiresIn: "7d" },
+        (err, token) => {
+          if (err) {
+            res.status(500).json({ error: "Failed to generate token" });
+          } else {
+            res.json({
+              token,
+            });
+          }
+        }
+      );
+      
   } catch (error) {
-    console.log(error);
+    return res.status(500).json({ error: "Error while login" });
   }
-};
 
-const login = async (req, res) => {
-  const { username, password } = req.body;
 
-  jwt.sign(
-    { username, password },
-    secretkey,
-    { expiresIn: "7d" },
-    (err, token) => {
-      if (err) {
-        res.status(500).json({ error: "Failed to generate token" });
-      } else {
-        res.json({
-          token,
-        });
-      }
-    }
-  );
 };
 
 const verifyToken = (req, res, next) => {
