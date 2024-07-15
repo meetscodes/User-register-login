@@ -1,14 +1,18 @@
 import express from "express";
 import bodyParser from "body-parser";
 import connect from "./src/db.js";
-import userRouter from "./src/user/routs.js";
+// import userRouter from "./src/user/routs.js";
 
 const app = express();
 app.use(bodyParser.json());
 
 connect();
 
-app.use('/api/user',userRouter)
+// app.use('/api/user',userRouter)
+
+app.get('/hello',()=>{
+  console.log("helloo world");
+})
 
 
 app.listen(3000, () => {

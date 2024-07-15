@@ -1,106 +1,47 @@
-const secretkey = "niwhefhwefhwoeoqdjoqj";
-import userModel from "./userModel.js";
-import jwt from "jsonwebtoken";
+const express = require('express');
+const { body, validationResult } = require('express-validator');
+const mongoose = require('mongoose');
+const Contact = require('../models/contact'); // Adjust the path as necessary
 
-const register = async (req, res) => {
-    const { username, password } = req.body;
+const router = express.Router();
 
-    if (!username || !password) {
-      return res.status(400).json({ error: "All fields are required" });
-    }
-  
-    try {
-      const isUserExist = await userModel.findOne({ username });
-      if (isUserExist) {
-        return res.status(400).json({ error: "User already exists" });
-      }
-    } catch (error) {
-      return res.status(500).json({ error: "Error checking user existence" });
-    }
-  
-    try {
-      const newUser = await userModel.create({
-        username,
-        password,
-      });
-  
-      return res.status(201).json({ message: "User created successfully" });
-    } catch (error) {
-      return res.status(500).json({ error: "Error while user creation" });
-    }
-  };
+// Middleware for parsing JSON bodies
+router.use(express.json());
 
+// Validation middleware
+const contactValidation = [
+  body('name').notEmpty().withMessage('Name is required'),
+  body('phoneNumber')
+    .notEmpty().withMessage('Phone number is required')
+    .matches(/^\+?[1-9]\d{1,14}$/).withMessage('Please fill a valid phone number'),
+  body('email')
+    .notEmpty().withMessage('Email is required')
+    .isEmail().withMessage('Please fill a valid email address'),
+  body('message').notEmpty().withMessage('Message is required'),
+];
 
-
-
-const login = async (req, res) => {
-
-  const { username, password } = req.body;
-
-  if (!username || !password) {
-    return res.status(400).json({ error: "Username and password are required" });
+// Register route
+router.post('/register', contactValidation, async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ message: 'Validation errors', errors: errors.array() });
   }
+
+  const { name, phoneNumber, email, message } = req.body;
 
   try {
-    const user = await userModel.findOne({ username });
+    // Create a new contact entry
+    const newContact = new Contact({ name, phoneNumber, email, message });
 
-    if (!user || user.password !== password) {
-      return res.status(401).json({ error: "Invalid username or password" });
-    }
+    // Save the contact to the database
+    await newContact.save();
 
-    jwt.sign(
-        { username, password },
-        secretkey,
-        { expiresIn: "7d" },
-        (err, token) => {
-          if (err) {
-            res.status(500).json({ error: "Failed to generate token" });
-          } else {
-            res.json({
-              token,
-            });
-          }
-        }
-      );
-      
+    // Send a success response
+    res.status(201).json({ message: 'Contact registered successfully!', contact: newContact });
   } catch (error) {
-    return res.status(500).json({ error: "Error while login" });
+    // Handle validation errors or other errors
+    res.status(400).json({ message: 'Error registering contact', error: error.message });
   }
+});
 
-
-};
-
-const verifyToken = (req, res, next) => {
-  const bearerHeader = req.headers["authorization"];
-
-  if (typeof bearerHeader !== "undefined") {
-    const bearer = bearerHeader.split(" ");
-    const token = bearer[1];
-    req.token = token;
-
-    jwt.verify(token, secretkey, (err, data) => {
-      if (err) {
-        res.status(401).send({
-          result: "token is not valid",
-        });
-      } else {
-        req.user = data;
-        // chack in
-        next();
-      }
-    });
-  } else {
-    res.status(400).send({
-      result: "token is not found",
-    });
-  }
-};
-
-const post = (req, res) => {
-  res.send(new Array(50));
-};
-const profile = (req, res) => {
-  res.json(req.user);
-};
-
-export { login, verifyToken, profile, post, register };
+module.exports = router;

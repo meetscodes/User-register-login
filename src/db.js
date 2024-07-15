@@ -10,7 +10,7 @@ const connect = async () => {
           console.log("error while connection..");
         });
         
-      const connect = await mongoose.connect("mongodb+srv://italiyaravi704:S1roMzo21k5lC8Fu@user-data.uegxxdl.mongodb.net/?retryWrites=true&w=majority&appName=user-data");
+      const connect = await mongoose.connect("mongodb+srv://lakhanimeet0098:OasPKtL4lRQ4hQ8W@cluster0.36exeiw.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0");
     } catch (error) {
       console.error("database connection error...", error);
     }
